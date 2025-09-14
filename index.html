@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>彦左衛門プログラム</title>
+<style>
+  body { font-family: monospace; background: #f7f7f7; padding: 20px; }
+  #output { white-space: pre-wrap; background: #fff; border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+  input[type="text"] { width: 80%; padding: 5px; font-size: 16px; }
+  button { padding: 5px 10px; font-size: 16px; }
+</style>
+</head>
+<body>
+  <h2>プログラム「彦左衛門」</h2>
+  <p>文字列を入力してください：</p>
+  <input type="text" id="userInput">
+  <button onclick="analyze()">送信</button>
+
+  <div id="output"></div>
+
+<script>
+  let hintLines = [];
+
+  // ===== ヒント用テキストファイルのURLを指定 =====
+  const HINT_FILE_URL = "新規 テキスト ドキュメント.txt"; // ← サーバーに置いたテキストファイルのパス
+
+  // 起動時にテキストファイルを読み込む
+  fetch(HINT_FILE_URL)
+    .then(response => {
+      if (!response.ok) throw new Error("ヒントファイルの読み込みに失敗しました");
+      return response.text();
+    })
+    .then(text => {
+      hintLines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+      console.log("ヒントファイルを読み込みました。行数:", hintLines.length);
+    })
+    .catch(err => {
+      console.error(err);
+    });
+
+  function analyze() {
+    const input = document.getElementById("userInput").value.trim();
+    const output = document.getElementById("output");
+    if (!input) {
+      output.textContent = "（空行です。何か入力してください）";
+      return;
+    }
+
+    // 文字ごとのカウント
+    const counts = {};
+    for (let ch of input) {
+      counts[ch] = (counts[ch] || 0) + 1;
+    }
+
+    let result = "プログラム「彦左衛門」は以下の文字を検出しました:\n\n";
+    for (let ch in counts) {
+      result += `  '${ch}': ${counts[ch]}\n`;
+    }
+
+    // 特定文字の有無をチェック
+    const targets = ["彦", "左", "衛", "門", "カ", "ニ"];
+    if (targets.every(t => input.includes(t))) {
+      result += "\n... おでの名前が見つかりました。で？\n";
+    } else {
+      result += "\n... ははは（乾いた笑い）\n";
+    }
+
+    // ヒント表示
+    if (hintLines.length > 0) {
+      const hint = hintLines[Math.floor(Math.random() * hintLines.length)];
+      result += `\nヒント: ${hint}`;
+    } else {
+      result += "\n（ヒントファイルが読み込まれていません）";
+    }
+
+    output.textContent = result;
+  }
+</script>
+</body>
+</html>
